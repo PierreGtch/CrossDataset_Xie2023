@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "crossdataset-xie2023"
+version = "0.1.0"
+description = ""
+authors = ["Pierre Guetschel <pierre.guetschel@donders.ru.nl>"]
+readme = "README.md"
+packages = [{ include = "crossdataset_xie2023" }]
+
+[tool.poetry.dependencies]
+python = "~3.10"
+braindecode = "^0.8.1"
+moabb = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
