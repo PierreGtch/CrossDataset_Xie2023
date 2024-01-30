@@ -234,7 +234,7 @@ def finetune(pretrained_net, X, y, X_test, y_test, callbacks, csv_path='results.
     # Save results to CSV:
     assert set(out.keys()) == set(csv_columns)
     df = pd.DataFrame([[out[k] for k in csv_columns]], columns=csv_columns)
-    with pd.option_context("display.max_columns", len(csv_columns)):
+    with pd.option_context("display.max_columns", len(csv_columns), "display.width", None):
         print(df)
     df.to_csv(csv_path, index=False, mode='a', header=False)
     return df
