@@ -81,12 +81,12 @@ def get_data(dataset, subjects: list[int] = None,
     preprocessed_data_dir = Path(data_dir).expanduser() / 'preprocessed' / 'xie2023'
     path = preprocessed_data_dir / f'{dataset_name}-epo.fif'
     if path.exists() and not overwrite_data:
-        logger.info(f'Loading pre-processed data from {preprocessed_data_dir}')
+        logger.info(f'Loading pre-processed data from {path}')
         epochs = mne.read_epochs(path, preload=False)
     else:
         logger.info('Pre-processing data')
         epochs = preprocess_data(dataset)
-        logger.info(f'Saving pre-processed data to {preprocessed_data_dir}')
+        logger.info(f'Saving pre-processed data to {path}')
         preprocessed_data_dir.mkdir(parents=True, exist_ok=True)
         assert preprocessed_data_dir.exists()
         epochs.save(path, overwrite=True)
