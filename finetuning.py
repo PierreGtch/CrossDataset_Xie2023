@@ -110,7 +110,6 @@ def finetune(pretrained_net, X, y, X_test, y_test, callbacks, csv_path='results.
             on_train=True, )
     ), ] + list(callbacks)
     out = dict(**fold_info) if fold_info is not None else dict()
-    out['seed'] = seed
     # Split train/valid:
     X_train, X_valid, y_train, y_valid = train_test_split(X, y, stratify=y,
                                                           random_state=seed, test_size=0.2)
@@ -277,6 +276,7 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
                 finetune_subject=finetune_subject,
                 finetune_scheme=finetune_scheme,
                 finetune_fold=fold,
+                seed=fold,
             )
             results.append(finetune(
                 pretrained_net,
