@@ -70,6 +70,13 @@ csv_columns = [
 ]
 
 
+def row_exists(dict_of_values: dict, df: pd.DataFrame):
+    v = df.iloc[:, 0] == df.iloc[:, 0]
+    for key, value in dict_of_values.items():
+        v &= (df[key] == value)
+    return v.any()
+
+
 class ThresholdStopping(Callback):
     """Stop training when a monitored metric has reached or is better than a certain threshold.
     """
@@ -246,8 +253,14 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
     base_dir = Path('./' if debug_datadir is None else debug_datadir)
     csv_path = base_dir / 'results' / f'pre-{pretrain_dataset.__class__.__name__}_fin-{finetune_dataset.__class__.__name__}_sub-{finetune_subject}.csv'
     csv_path.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(columns=csv_columns).to_csv(csv_path, index=False, mode='w' if overwrite else 'x',
-                                             header=True)
+    if overwrite or not csv_path.exists():
+        previous_results = pd.DataFrame(columns=csv_columns)
+        previous_results.to_csv(csv_path, index=False, mode='w', header=True)
+    else:
+        previous_results = pd.read_csv(csv_path)
+        assert len(previous_results.columns) == len(csv_columns)
+        assert all(a == b for a, b in zip(previous_results.columns, csv_columns))
+
     print(f'Writing results to {csv_path}')
     # Load pre-trained model:
     pretrained_net = load_net(pretrain_dataset, data_dir=debug_datadir)
@@ -267,7 +280,7 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
     X_train, y_train = Xy.X[train_mask], Xy.y[train_mask]
     X_test, y_test = Xy.X[test_mask], Xy.y[test_mask]
     # Finetune:
-    results = []
+    new_results = []
     for finetune_scheme, finetune_callback in EEGNetv4_finetuning_callbacks.items():
         for fold in range(n_folds):
             fold_info = dict(
@@ -278,7 +291,10 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
                 finetune_fold=fold,
                 seed=fold,
             )
-            results.append(finetune(
+            if row_exists(fold_info, previous_results):
+                print(f'Already exists: {fold_info}')
+                continue
+            new_results.append(finetune(
                 pretrained_net,
                 X=X_train, y=y_train,
                 X_test=X_test, y_test=y_test,
@@ -289,11 +305,11 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
                 fold_info=fold_info,
                 debug=debug_datadir is not None,
             ))
-    return pd.concat(results)
+    return pd.concat(new_results)
 
 
 class TestFinetuning:
-    def test_finetuning(self, tmp_path):
+    def test_finetuning(self, tmp_path, capfd):
         from pretraining import pretrain
         pretrain_dataset = pretrain_datasets[0]
         finetune_dataset = finetune_datasets[0]
@@ -311,8 +327,28 @@ class TestFinetuning:
         assert set(results.columns) == set(csv_columns)
         results_csv = pd.read_csv(
             tmp_path / 'results' / f'pre-{pretrain_dataset.__class__.__name__}_fin-{finetune_dataset.__class__.__name__}_sub-{finetune_dataset.subject_list[0]}.csv')
-        assert len(results_csv) == 20
+        assert len(results_csv) == 4
         assert set(results_csv.columns) == set(csv_columns)
+
+        # test overwrite:
+        out0, err = capfd.readouterr()
+        results = finetune_main(
+            pretrain_dataset=pretrain_dataset,
+            finetune_dataset=finetune_dataset,
+            finetune_subject=finetune_dataset.subject_list[0],
+            device='cpu',
+            debug_datadir=tmp_path,
+            overwrite=False,
+            n_folds=2,
+        )
+        out, err = capfd.readouterr()
+        assert sum('Already exists' in x for x in out.split('\n')) == 4
+        assert len(results) == 4
+        results_csv = pd.read_csv(
+            tmp_path / 'results' / f'pre-{pretrain_dataset.__class__.__name__}_fin-{finetune_dataset.__class__.__name__}_sub-{finetune_dataset.subject_list[0]}.csv')
+        assert len(results_csv) == 8
+        print(out0)
+        print(out)
 
 
 if __name__ == '__main__':
