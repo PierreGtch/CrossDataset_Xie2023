@@ -305,7 +305,7 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
                 fold_info=fold_info,
                 debug=debug_datadir is not None,
             ))
-    return pd.concat(new_results)
+    return pd.concat(new_results) if new_results else None
 
 
 class TestFinetuning:
@@ -372,5 +372,5 @@ if __name__ == '__main__':
                     debug_datadir=None,
                     overwrite=args.overwrite,
                 ))
-    results = pd.concat(results)
+    results = pd.concat(results) if results else "NO NEW RESULTS"
     print(results)
