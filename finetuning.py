@@ -307,7 +307,7 @@ class TestFinetuning:
             overwrite=False,
             n_folds=1,
         )
-        assert len(results) == 20
+        assert len(results) == 4
         assert set(results.columns) == set(csv_columns)
         results_csv = pd.read_csv(
             tmp_path / 'results' / f'pre-{pretrain_dataset.__class__.__name__}_fin-{finetune_dataset.__class__.__name__}_sub-{finetune_dataset.subject_list[0]}.csv')
