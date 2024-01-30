@@ -268,9 +268,9 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
     Xy, metadata = get_data(finetune_dataset, subjects=[finetune_subject],
                             data_dir=debug_datadir, return_metadata=True)
     # Split train/test:
-    if any('train' in x for x in metadata.session):
+    if any('train' in x for x in metadata.session) and any('test' in x for x in metadata.session):
         split_key = 'session'
-    elif any('run' in x for x in metadata.session):
+    elif any('train' in x for x in metadata.run) and any('test' in x for x in metadata.run):
         split_key = 'run'
     else:
         raise ValueError()
