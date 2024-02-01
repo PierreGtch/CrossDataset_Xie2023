@@ -14,6 +14,7 @@ from skorch.dataset import Dataset
 from skorch.helper import predefined_split
 from saving import save_net, load_net
 from data import pretrain_datasets, finetune_datasets, get_data
+from data import ref as REF_CHANNEL
 from braindecode import EEGClassifier
 
 # Arbitrary choice because not documented in Xie2023:
@@ -67,6 +68,7 @@ csv_columns = [
     'finetune_phase1_valid_acc',
     'finetune_phase2_valid_acc',
     'test_acc',
+    'ref_channel',
 ]
 
 
@@ -290,6 +292,7 @@ def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=
                 finetune_scheme=finetune_scheme,
                 finetune_fold=fold,
                 seed=fold,
+                ref_channel=REF_CHANNEL,
             )
             if row_exists(fold_info, previous_results):
                 print(f'Already exists: {fold_info}')

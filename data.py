@@ -17,6 +17,8 @@ channels = ['C3', 'Cz', 'C4']
 
 # 2. Re-reference using left mastoid
 # ref = 'M1'
+ref = None
+# ref = 'average'
 # -> canceled because not all datasets have this channel.
 # -> instead, use average reference
 
@@ -61,7 +63,8 @@ def _epochs_to_dataset(epochs):
 def preprocess_data(dataset) -> mne.Epochs:  # tuple[mne.Epochs, mne.Epochs]:
     paradigm = MotorImagery(channels=channels, resample=resample, tmin=tmin, tmax=tmax)
     epochs, labels, metadata = paradigm.get_data(dataset, return_epochs=True)
-    epochs, _ = mne.set_eeg_reference(epochs, ref_channels='average', copy=False)
+    if ref is not None:
+        epochs, _ = mne.set_eeg_reference(epochs, ref_channels=ref, copy=False)
     # third-order Butterworth bandpass filter of 0–40 Hz applied on epochs as in Xie2023
     epochs.filter(l_freq=l_freq, h_freq=h_freq, method="iir",
                   iir_params=dict(order=3, ftype='butter'))
@@ -73,13 +76,13 @@ def preprocess_data(dataset) -> mne.Epochs:  # tuple[mne.Epochs, mne.Epochs]:
 
 def get_data(dataset, subjects: list[int] = None,
              overwrite_data: bool = False,
-             data_dir=None, return_metadata=False) -> Dataset:  # tuple[Dataset, Dataset]:
+             data_dir=None, return_metadata=False):
     set_log_level('info')
     dataset_name = dataset.__class__.__name__
     if data_dir is None:
         data_dir = Path('~/') / 'data'
     preprocessed_data_dir = Path(data_dir).expanduser() / 'preprocessed' / 'xie2023'
-    path = preprocessed_data_dir / f'{dataset_name}-epo.fif'
+    path = preprocessed_data_dir / f'{dataset_name}{"" if ref == "average" else "_no-ref"}-epo.fif'
     if path.exists() and not overwrite_data:
         logger.info(f'Loading pre-processed data from {path}')
         epochs = mne.read_epochs(path, preload=False)
