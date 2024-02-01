@@ -10,6 +10,7 @@ packages = [{ include = "crossdataset_xie2023" }]
 python = "~3.10"
 braindecode = "^0.8.1"
 moabb = "^1.0.0"
+jupyter = "^1.0.0"
 
 
 [build-system]
