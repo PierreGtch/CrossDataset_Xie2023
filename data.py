@@ -102,7 +102,7 @@ pretrain_datasets = [
     BNCI2014_001(),
     BNCI2014_004(),
     Lee2019_MI(),
-    PhysionetMI(),
+    PhysionetMI(imagined=True, executed=True),
     Schirrmeister2017(),
 ]
 
