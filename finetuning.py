@@ -106,7 +106,7 @@ def set_dropout(module, dropout):
             m.p = dropout
 
 
-def finetune(pretrained_net, X, y, X_test, y_test, callbacks, csv_path='results.csv',
+def finetune(pretrained_net, X, y, X_test, y_test, callbacks, csv_path,
              device='cpu', seed: int = None, fold_info: dict = None, debug: bool = False):
     callbacks = [(
         'train_acc',
