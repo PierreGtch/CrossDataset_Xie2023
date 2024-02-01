@@ -249,7 +249,7 @@ def finetune(pretrained_net, X, y, X_test, y_test, callbacks, csv_path,
     return df
 
 
-def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=5,
+def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=1,
                   device='cpu', debug_datadir=None, overwrite=False):
     # Initialize results' CSV:
     base_dir = Path('./' if debug_datadir is None else debug_datadir)
