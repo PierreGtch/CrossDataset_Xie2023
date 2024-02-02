@@ -249,7 +249,7 @@ def finetune(pretrained_net, X, y, X_test, y_test, callbacks, csv_path,
     return df
 
 
-def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds=1,
+def finetune_main(pretrain_dataset, finetune_dataset, finetune_subject, n_folds,
                   device='cpu', debug_datadir=None, overwrite=False):
     # Initialize results' CSV:
     base_dir = Path('./' if debug_datadir is None else debug_datadir)
@@ -358,8 +358,9 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
-    parser.add_argument('--device', type=str, default='cpu')
-    parser.add_argument('--overwrite', action='store_true')
+    parser.add_argument('-d', '--device', type=str, default='cpu')
+    parser.add_argument('-o', '--overwrite', action='store_true')
+    parser.add_argument('-n', '--n_folds', type=int, default=5)
     # parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
 
@@ -374,6 +375,7 @@ if __name__ == '__main__':
                     device=args.device,
                     debug_datadir=None,
                     overwrite=args.overwrite,
+                    n_folds=args.n_folds,
                 ))
     results = pd.concat(results) if results else "NO NEW RESULTS"
     print(results)
