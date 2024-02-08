@@ -158,45 +158,44 @@ def finetune(pretrained_net, X, y, X_test, y_test, callbacks, csv_path,
 
     # Set early-stopping and finetuning callbacks:
     checkpoint_dirname = mkdtemp()
-    # Schirrmeister2017:
+    # # Schirrmeister2017:
+    # phase1_callbacks = (
+    #         callbacks +
+    #         [
+    #             ('early_stopping', EarlyStopping(
+    #                 patience=100 if not debug else 1,
+    #                 # patience not given in Xie2023 nor Schirrmeister2017,
+    #                 # so used the same as for pre-training
+    #                 monitor='valid_acc',
+    #                 lower_is_better=False,
+    #                 load_best=False,
+    #             )),
+    #             ('checkpoint', Checkpoint(
+    #                 monitor='valid_acc_best',
+    #                 load_best=True,
+    #                 dirname=checkpoint_dirname,
+    #             )),
+    #         ]
+    # )
+    # Described in Xie2023 despite them also claiming they do the same as in Schirrmeister2017:
     phase1_callbacks = (
             callbacks +
             [
                 ('early_stopping', EarlyStopping(
-                    patience=100 if not debug else 1,
+                    patience=100,
                     # patience not given in Xie2023 nor Schirrmeister2017,
                     # so used the same as for pre-training
-                    monitor='valid_acc',
-                    lower_is_better=False,
-                    load_best=False,
+                    monitor='train_loss',
+                    lower_is_better=True,
+                    load_best=False
                 )),
                 ('checkpoint', Checkpoint(
-                    monitor='valid_acc_best',
+                    monitor='train_loss_best',
                     load_best=True,
                     dirname=checkpoint_dirname,
                 )),
             ]
     )
-    # Described in Xie2023 despite them also claiming they do the same as in Schirrmeister2017:
-    # phase1_callbacks = (
-    #         [
-    #             ('early_stopping', EarlyStopping(
-    #                 patience=100,
-    #                 # patience not given in Xie2023 nor Schirrmeister2017,
-    #                 # so used the same as for pre-training
-    #                 monitor='train_loss',
-    #                 lower_is_better=True,
-    #                 load_best=False
-    #             )),
-    #             ('checkpoint', Checkpoint(
-    #                 monitor='train_loss_best',
-    #                 lower_is_better=True,
-    #                 load_best=True,
-    #                 dirname = checkpoint_dirname,
-    #             )),
-    #         ]
-    #         + callbacks
-    # )
     # Train Phase 1:
     net = EEGClassifier(
         pretrained_module,
